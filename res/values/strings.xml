@@ -1,0 +1,15 @@
+<resources>
+
+    <string name="app_name">Poddy</string>
+    <string name="add_button">Add</string>
+    <string name="enter_url">Enter url to add stream</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_poddy_main">Poddy</string>
+    <string name="invalid_url_title">Error</string>
+    <string name="invalid_url_message">Please enter a valid URL</string>
+    <string name="ok">OK</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_display_podcast">Show Podcast Episodes</string>
+
+</resources>
