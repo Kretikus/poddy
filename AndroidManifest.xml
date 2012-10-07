@@ -6,7 +6,8 @@
     <uses-sdk
         android:minSdkVersion="11"
         android:targetSdkVersion="15" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -27,6 +28,13 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.poddyproductions.poddy.PoddyMainActivity" />
+        </activity>
+        <activity
+            android:name=".DisplayPodcastEpisode"
+            android:label="@string/title_activity_display_podcast_episode" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.poddyproductions.poddy.DisplayPodcast" />
         </activity>
     </application>
 

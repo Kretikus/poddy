@@ -3,6 +3,7 @@ package com.poddyproductions.poddy;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,7 +21,7 @@ import android.util.Log;
 public class Podcast {
 
 	private static final String TAG = "DisplayPodcast";
-	
+
 	private Document getDomElement(String xml){
         Document doc = null;
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -46,11 +47,7 @@ public class Podcast {
             return doc;
     }
 	
-	public String getValue(Element item, String str) {
-	    NodeList n = item.getElementsByTagName(str);
-	    return this.getElementValue(n.item(0));
-	}
-	 
+
 	public final String getElementValue(Node elem) {
 	         Node child;
 	         if( elem != null){
@@ -65,6 +62,10 @@ public class Podcast {
 	         return "";
 	  } 
 
+	public String getValue(Element item, String str) {
+	    NodeList n = item.getElementsByTagName(str);
+	    return this.getElementValue(n.item(0));
+	}
 
 	static final String CHANNEL_ITEM = "channel"; // parent node
 	static final String ITEMS_ITEM   = "item"; // parent node
@@ -79,13 +80,19 @@ public class Podcast {
 		String itunes_subtitle;
 		String itunes_summary;
 		String itunes_duration;
+		String mediaUrl;
+		String mediaLength;
+		String mediatype;
+		String filename;
 
 		public String toString() {
 			return title;
 		}
 	}
 
-
+	long   id;
+	String feedUrl;
+	Date   lastUpdated;
 	String title;
 	String description;
 	String link;
@@ -97,10 +104,21 @@ public class Podcast {
 	String webMaster;
 	String itunes_subtitle;
 	String itunes_summary;
+	String itunes_image;
+
+	public String toString() {
+		return title;
+	}
+
 
 	ArrayList<PodcastItem> podcastItems = new ArrayList<PodcastItem>();
-	
-	public Podcast(String xml) {
+
+	public Podcast() { id = -1; }
+
+	public Podcast(String feedUrl, String xml) {
+		id = -1;
+		lastUpdated = new Date();
+		this.feedUrl = feedUrl;
 		Document doc = getDomElement(xml);
 		if (doc != null) {
 			NodeList nl = doc.getElementsByTagName(CHANNEL_ITEM);
@@ -118,6 +136,7 @@ public class Podcast {
 			webMaster       = getValue(rootElement, "webMaster");
 			itunes_subtitle = getValue(rootElement, "itunes:subtitle");
 			itunes_summary  = getValue(rootElement, "itunes:summary");
+			itunes_image    = getValue(rootElement, "itunes:image");
 
 //			Log.e(TAG, "title: "       + title);
 //			Log.e(TAG, "description: " + description);
@@ -147,6 +166,14 @@ public class Podcast {
 				item.itunes_summary  = getValue(element, "itunes:summary");
 				item.itunes_duration = getValue(element, "itunes:duration");
 
+				NodeList enclosureList   = element.getElementsByTagName("enclosure");
+				if (enclosureList.getLength() > 0) {
+					Element enclosureElement = (Element)enclosureList.item(0);
+					item.mediaUrl    = enclosureElement.getAttribute("url");
+					item.mediaLength = enclosureElement.getAttribute("length");
+					item.mediatype   = enclosureElement.getAttribute("type");
+				}
+				
 //				Log.e(TAG, "title: "          + item.title);
 //				Log.e(TAG, "description: "    + item.description);
 //				Log.e(TAG, "link: "           + item.link);
@@ -156,7 +183,10 @@ public class Podcast {
 //				Log.e(TAG, "itunes:subtitle: "+ item.itunes_subtitle);
 //				Log.e(TAG, "itunes:summary: " + item.itunes_summary);
 //				Log.e(TAG, "itunes:duration: "+ item.itunes_duration);
-				
+//				Log.e(TAG, "mediaUrl: "       + item.mediaUrl);
+//				Log.e(TAG, "mediaLength: "    + item.mediaLength);
+//				Log.e(TAG, "mediatype: "      + item.mediatype);
+
 				podcastItems.add(item);
 			}
 		}

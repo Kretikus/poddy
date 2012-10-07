@@ -8,8 +8,8 @@
     <string name="invalid_url_title">Error</string>
     <string name="invalid_url_message">Please enter a valid URL</string>
     <string name="ok">OK</string>
-
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_display_podcast">Show Podcast Episodes</string>
+    <string name="title_activity_display_podcast_episode">DisplayPodcastEpisode</string>
 
 </resources>
