@@ -86,7 +86,7 @@ public class PoddyMainActivity extends ListActivity	{
 		dbOpenHelper = new PoddyStreamsOpenHelper(this);
 
 		streamsArray = dbOpenHelper.getAllPodcasts();
-		adapter = new ArrayAdapter<Podcast>(this,android.R.layout.simple_list_item_1, streamsArray);
+		adapter = new ArrayAdapter<Podcast>(this, android.R.layout.simple_list_item_1, streamsArray);
 		getListView().setAdapter(adapter);
 
 	}

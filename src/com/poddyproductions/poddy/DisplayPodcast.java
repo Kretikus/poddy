@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class DisplayPodcast extends ListActivity {
@@ -16,7 +15,7 @@ public class DisplayPodcast extends ListActivity {
 	
 	public static Podcast currentPodcast;
 	
-	private ArrayAdapter<Podcast.PodcastItem> adapter;
+	private PodcastAdapter adapter;
 	private Podcast podcast;
 
 	@Override
@@ -28,7 +27,7 @@ public class DisplayPodcast extends ListActivity {
 		String title  = intent.getStringExtra(PoddyMainActivity.EXTRA_PODCASTURL);
 		podcast       = PoddyMainActivity.dbOpenHelper.getAllPodcastWithTitle(title);
 
-		adapter = new ArrayAdapter<Podcast.PodcastItem>(this,android.R.layout.simple_list_item_1, podcast.podcastItems);
+		adapter = new PodcastAdapter(this, podcast);
 		getListView().setAdapter(adapter);
 
 		setTitle(podcast.title);

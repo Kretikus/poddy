@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
-import android.widget.EditText;
+import android.widget.TextView;
 
 public class DisplayPodcastEpisode extends Activity {
 
@@ -37,7 +37,7 @@ public class DisplayPodcastEpisode extends Activity {
 			return;
 		}
 
-		EditText v = (EditText)findViewById(R.id.episode_info1);
+		TextView v = (TextView)findViewById(R.id.episode_info1);
 
 		String t = podcastItem.description + "<p>" + podcastItem.itunes_summary;
 
