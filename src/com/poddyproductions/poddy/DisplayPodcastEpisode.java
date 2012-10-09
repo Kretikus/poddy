@@ -3,8 +3,9 @@ package com.poddyproductions.poddy;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
-import android.widget.TextView;
+import android.widget.EditText;
 
 public class DisplayPodcastEpisode extends Activity {
 
@@ -22,7 +23,7 @@ public class DisplayPodcastEpisode extends Activity {
 		setTitle(episode);
 
 		podcast = DisplayPodcast.currentPodcast;
-		
+
 		for(int i = 0; i < podcast.podcastItems.size(); i++) {
 			Podcast.PodcastItem item = podcast.podcastItems.get(i);
 			if (episode.equals(item.toString())) {
@@ -36,8 +37,11 @@ public class DisplayPodcastEpisode extends Activity {
 			return;
 		}
 
-		TextView v = (TextView)findViewById(R.id.episode_info);
-		v.setText(podcastItem.description);
-		
+		EditText v = (EditText)findViewById(R.id.episode_info1);
+
+		String t = podcastItem.description + "<p>" + podcastItem.itunes_summary;
+
+		v.setText(Html.fromHtml(t));
+
 	}
 }

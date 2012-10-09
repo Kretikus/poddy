@@ -66,18 +66,18 @@ public class PoddyMainActivity extends ListActivity	{
 		}
 	}
 
-	protected void showAlert(String title, String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(R.string.invalid_url_message)
-				.setTitle(R.string.invalid_url_title)
-				.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int id) {}
-				});
-
-		AlertDialog dialog = builder.create();
-		dialog.show();
-	}
+//	protected void showAlert(String title, String message) {
+//		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//		builder.setMessage(R.string.invalid_url_message)
+//				.setTitle(R.string.invalid_url_title)
+//				.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+//					@Override
+//					public void onClick(DialogInterface dialog, int id) {}
+//				});
+//
+//		AlertDialog dialog = builder.create();
+//		dialog.show();
+//	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +94,7 @@ public class PoddyMainActivity extends ListActivity	{
 	@Override
 	protected void onDestroy() {
 		dbOpenHelper.close();
+		super.onDestroy();
 	}
 	
 	@Override
@@ -108,7 +109,8 @@ public class PoddyMainActivity extends ListActivity	{
 		if (!url.isEmpty() && (URLUtil.isHttpUrl(url) || URLUtil.isHttpsUrl(url)) ) {
 			new AddStreamTask().execute(url);
 		} else{
-			showAlert(getString(R.string.invalid_url_title), getString(R.string.invalid_url_message));
+			//new AddStreamTask().execute("http://feeds.feedburner.com/raumzeit-podcast");
+			//showAlert(getString(R.string.invalid_url_title), getString(R.string.invalid_url_message));
 		}
 	}
 
