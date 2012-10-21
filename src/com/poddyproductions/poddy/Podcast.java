@@ -90,21 +90,21 @@ public class Podcast {
 		}
 	}
 
-	long   id;
-	String feedUrl;
-	Date   lastUpdated;
-	String title;
-	String description;
-	String link;
-	String language;
-	String copyright;
-	String lastBuildDate;
-	String pubDate;
-	String docs;
-	String webMaster;
-	String itunes_subtitle;
-	String itunes_summary;
-	String itunes_image;
+	public long   id;
+	public String feedUrl;
+	public Date   lastUpdated;
+	public String title;
+	public String description;
+	public String link;
+	public String language;
+	public String copyright;
+	public String lastBuildDate;
+	public String pubDate;
+	public String docs;
+	public String webMaster;
+	public String itunes_subtitle;
+	public String itunes_summary;
+	public String itunes_image;
 
 	public String toString() {
 		return title;
@@ -136,7 +136,12 @@ public class Podcast {
 			webMaster       = getValue(rootElement, "webMaster");
 			itunes_subtitle = getValue(rootElement, "itunes:subtitle");
 			itunes_summary  = getValue(rootElement, "itunes:summary");
-			itunes_image    = getValue(rootElement, "itunes:image");
+			
+			NodeList imgEnclosureList   = rootElement.getElementsByTagName("itunes:image");
+			if (imgEnclosureList.getLength() > 0) {
+				Element enclosureElement = (Element)imgEnclosureList.item(0);
+				itunes_image = enclosureElement.getAttribute("href");
+			}
 
 //			Log.e(TAG, "title: "       + title);
 //			Log.e(TAG, "description: " + description);

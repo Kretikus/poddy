@@ -14,10 +14,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 
 	private static final int DATABASE_VERSION            = 1;
-	private static final String DATABASE_NAME            = "poddyDb";
 	private static final String STREAMS_TABLE_NAME       = "poddy_streams";
 	private static final String PODCAST_ITEMS_TABLE_NAME = "poddy_podcast_items";
-	
 	
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -55,8 +53,8 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 					"itunes_duration TEXT, " +
 					"filename        TEXT );";
 
-	PoddyStreamsOpenHelper(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+	public PoddyStreamsOpenHelper(Context context, String databaseName) {
+		super(context, databaseName, null, DATABASE_VERSION);
 	}
 
 	@Override
