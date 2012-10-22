@@ -46,7 +46,7 @@ public class PodcastAdapter extends BaseAdapter {
 	        TextView text2 = twoLineListItem.getText2();
 
 	        text1.setText(podcasts.podcastItems.get(position).toString() );
-	        text2.setText("" + podcasts.podcastItems.get(position).mediatype);
+	        text2.setText("" + podcasts.podcastItems.get(position).mediaType);
 
 	        return twoLineListItem;
 	}

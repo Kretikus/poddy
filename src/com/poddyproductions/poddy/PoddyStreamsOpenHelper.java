@@ -51,6 +51,9 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 					"itunes_subtitle TEXT, " +
 					"itunes_summary  TEXT, " +
 					"itunes_duration TEXT, " +
+					"mediaUrl        TEXT, " +
+					"mediaLength     TEXT, " +
+					"mediaType       TEXT, " +
 					"filename        TEXT );";
 
 	public PoddyStreamsOpenHelper(Context context, String databaseName) {
@@ -68,6 +71,11 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		// TODO Implement
 	}
 
+	public void dropTables() {
+		getWritableDatabase().delete(PODCAST_ITEMS_TABLE_NAME, null, null);
+		getWritableDatabase().delete(STREAMS_TABLE_NAME, null, null);
+	}
+	
 	
 	public void add(Podcast entry) {
 		ContentValues values = new ContentValues();
@@ -101,6 +109,10 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 			itemValues.put("itunes_subtitle", item.itunes_subtitle);
 			itemValues.put("itunes_summary", item.itunes_summary);
 			itemValues.put("itunes_duration", item.itunes_duration);
+			itemValues.put("mediaUrl", item.mediaUrl);
+			itemValues.put("mediaLength", item.mediaLength);
+			itemValues.put("mediaType", item.mediaType);
+
 			itemValues.put("filename", "");
 			
 			getWritableDatabase().insert(PODCAST_ITEMS_TABLE_NAME, null, itemValues);
@@ -167,7 +179,10 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 				pcItem.itunes_subtitle  = cur2.getString(7);
 				pcItem.itunes_summary   = cur2.getString(8);
 				pcItem.itunes_duration  = cur2.getString(9);
-				pcItem.filename         = cur2.getString(10);
+				pcItem.mediaUrl         = cur2.getString(10);
+				pcItem.mediaLength      = cur2.getString(11);
+				pcItem.mediaType        = cur2.getString(12);
+				pcItem.filename         = cur2.getString(13);
 				pc.podcastItems.add(pcItem);
 			}
 			ret.add(pc);

@@ -70,20 +70,20 @@ public class Podcast {
 	static final String CHANNEL_ITEM = "channel"; // parent node
 	static final String ITEMS_ITEM   = "item"; // parent node
 
-	class PodcastItem {
-		String title;
-		String link;
-		String guid;
-		String description;
-		String category;
-		String pubDate;
-		String itunes_subtitle;
-		String itunes_summary;
-		String itunes_duration;
-		String mediaUrl;
-		String mediaLength;
-		String mediatype;
-		String filename;
+	public class PodcastItem {
+		public String title;
+		public String link;
+		public String guid;
+		public String description;
+		public String category;
+		public String pubDate;
+		public String itunes_subtitle;
+		public String itunes_summary;
+		public String itunes_duration;
+		public String mediaUrl;
+		public String mediaLength;
+		public String mediaType;
+		public String filename;
 
 		public String toString() {
 			return title;
@@ -111,7 +111,7 @@ public class Podcast {
 	}
 
 
-	ArrayList<PodcastItem> podcastItems = new ArrayList<PodcastItem>();
+	public ArrayList<PodcastItem> podcastItems = new ArrayList<PodcastItem>();
 
 	public Podcast() { id = -1; }
 
@@ -176,7 +176,7 @@ public class Podcast {
 					Element enclosureElement = (Element)enclosureList.item(0);
 					item.mediaUrl    = enclosureElement.getAttribute("url");
 					item.mediaLength = enclosureElement.getAttribute("length");
-					item.mediatype   = enclosureElement.getAttribute("type");
+					item.mediaType   = enclosureElement.getAttribute("type");
 				}
 				
 //				Log.e(TAG, "title: "          + item.title);
@@ -190,7 +190,7 @@ public class Podcast {
 //				Log.e(TAG, "itunes:duration: "+ item.itunes_duration);
 //				Log.e(TAG, "mediaUrl: "       + item.mediaUrl);
 //				Log.e(TAG, "mediaLength: "    + item.mediaLength);
-//				Log.e(TAG, "mediatype: "      + item.mediatype);
+//				Log.e(TAG, "mediaType: "      + item.mediaType);
 
 				podcastItems.add(item);
 			}
