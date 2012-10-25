@@ -2,6 +2,8 @@ package com.poddyproductions.poddy;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -21,7 +23,8 @@ import android.util.Log;
 public class Podcast {
 
 	private static final String TAG = "DisplayPodcast";
-
+	private static final SimpleDateFormat podCastFormat  = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+	
 	private Document getDomElement(String xml){
         Document doc = null;
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -76,7 +79,7 @@ public class Podcast {
 		public String guid;
 		public String description;
 		public String category;
-		public String pubDate;
+		public Date   pubDate;
 		public String itunes_subtitle;
 		public String itunes_summary;
 		public String itunes_duration;
@@ -110,7 +113,17 @@ public class Podcast {
 		return title;
 	}
 
-
+	private Date createDate(String str) {
+		Date date;
+		try {
+			date = podCastFormat.parse(str);
+		} catch(ParseException ex) {
+			Log.e(TAG, "Cannot format time!");
+			date = new Date();
+		}
+		return date;
+	}
+	
 	public ArrayList<PodcastItem> podcastItems = new ArrayList<PodcastItem>();
 
 	public Podcast() { id = -1; }
@@ -156,9 +169,9 @@ public class Podcast {
 //			Log.e(TAG, "itunes_summary: " + itunes_summary);
 
 			NodeList items = doc.getElementsByTagName(ITEMS_ITEM);
-			Log.e(TAG, "Doing: " + items.getLength());
+			//Log.e(TAG, "Doing: " + items.getLength());
 			for (int i = 0; i < items.getLength(); i++) {
-				Log.e(TAG, "I: " + Integer.valueOf(i));
+				//Log.e(TAG, "I: " + Integer.valueOf(i));
 				Element element = (Element)items.item(i);
 				PodcastItem item = new PodcastItem();
 				item.title           = getValue(element, "title");
@@ -166,7 +179,8 @@ public class Podcast {
 				item.guid            = getValue(element, "guid");
 				item.description     = getValue(element, "description");
 				item.category        = getValue(element, "category");
-				item.pubDate         = getValue(element, "pubDate");
+				String pubDate       = getValue(element, "pubDate");
+				item.pubDate         = createDate(pubDate);
 				item.itunes_subtitle = getValue(element, "itunes:subtitle");
 				item.itunes_summary  = getValue(element, "itunes:summary");
 				item.itunes_duration = getValue(element, "itunes:duration");

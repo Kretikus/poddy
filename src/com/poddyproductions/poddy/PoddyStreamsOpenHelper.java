@@ -1,23 +1,31 @@
 package com.poddyproductions.poddy;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Base64;
+import android.util.Log;
 
 public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 
 	private static final int DATABASE_VERSION            = 1;
 	private static final String STREAMS_TABLE_NAME       = "poddy_streams";
 	private static final String PODCAST_ITEMS_TABLE_NAME = "poddy_podcast_items";
-	
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	private static final SimpleDateFormat dateFormat     = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final String STREAMS_TABLE_CREATE =
 			"CREATE TABLE " + STREAMS_TABLE_NAME + " (" +
@@ -37,7 +45,9 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 				"itunes_summary  TEXT, " +
 				"itunes_image_ln TEXT, " +
 				"itunes_image    BLOB );";
-
+	
+	private static final String STREAMS_INDEX_CREATE =
+			"CREATE INDEX " + STREAMS_TABLE_NAME + " ON title;";
 	
 	private static final String PODCAST_ITEMS_TABLE_CREATE =
 			"CREATE TABLE " + PODCAST_ITEMS_TABLE_NAME + " (" +
@@ -54,7 +64,66 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 					"mediaUrl        TEXT, " +
 					"mediaLength     TEXT, " +
 					"mediaType       TEXT, " +
-					"filename        TEXT );";
+					"filename        TEXT, " +
+					"PRIMARY KEY (podcastId, title));";
+	
+	private static final String PODCAST_ITEMS_INDEX_CREATE = 
+			"CREATE INDEX " + PODCAST_ITEMS_TABLE_NAME + " ON pubDate;";
+
+	public static String compress(String str) {
+
+		try {
+		    byte[] blockcopy = ByteBuffer
+		            .allocate(4)
+		            .order(java.nio.ByteOrder.LITTLE_ENDIAN)
+		            .putInt(str.length())
+		            .array();
+		    ByteArrayOutputStream os = new ByteArrayOutputStream(str.length());
+		    GZIPOutputStream gos = new GZIPOutputStream(os);
+		    gos.write(str.getBytes());
+		    gos.close();
+		    os.close();
+		    byte[] compressed = new byte[4 + os.toByteArray().length];
+		    System.arraycopy(blockcopy, 0, compressed, 0, 4);
+		    System.arraycopy(os.toByteArray(), 0, compressed, 4,
+		            os.toByteArray().length);
+		    return Base64.encodeToString(compressed, Base64.DEFAULT);
+		} catch (IOException ex) {
+			return new String();
+		}
+	}
+
+	public static String decompress(String zipText) {
+
+		try {
+		    byte[] compressed = Base64.decode(zipText, Base64.DEFAULT);
+		    if (compressed.length > 4)
+		    {
+		        GZIPInputStream gzipInputStream = new GZIPInputStream(
+		                new ByteArrayInputStream(compressed, 4,
+		                        compressed.length - 4));
+	
+		        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		        for (int value = 0; value != -1;) {
+		            value = gzipInputStream.read();
+		            if (value != -1) {
+		                baos.write(value);
+		            }
+		        }
+		        gzipInputStream.close();
+		        baos.close();
+		        String sReturn = new String(baos.toByteArray(), "UTF-8");
+		        return sReturn;
+		    }
+		    else
+		    {
+		        return "";
+		    }
+		} catch (IOException ex) {
+			return new String();
+		}
+	}
+
 
 	public PoddyStreamsOpenHelper(Context context, String databaseName) {
 		super(context, databaseName, null, DATABASE_VERSION);
@@ -63,7 +132,10 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(STREAMS_TABLE_CREATE);
+//		db.execSQL(STREAMS_INDEX_CREATE);
+
 		db.execSQL(PODCAST_ITEMS_TABLE_CREATE);
+//		db.execSQL(PODCAST_ITEMS_INDEX_CREATE);
 	}
 
 	@Override
@@ -99,13 +171,17 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		for(int i = 0; i < entry.podcastItems.size(); i++) {
 			ContentValues itemValues = new ContentValues();
 			Podcast.PodcastItem item = entry.podcastItems.get(i);
+			
+			//String s = compress(item.itunes_summary);
+			//Log.e("TEST", "Compressed length: " + s.length() + "Uncompressed length: "+ item.itunes_summary.length());
+			
 			itemValues.put("podcastId", rowId);
 			itemValues.put("title", item.title);
 			itemValues.put("link", item.link);
 			itemValues.put("guid", item.guid);
 			itemValues.put("description", item.description);
 			itemValues.put("category", item.category);
-			itemValues.put("pubDate", item.pubDate);
+			itemValues.put("pubDate", dateFormat.format(item.pubDate));
 			itemValues.put("itunes_subtitle", item.itunes_subtitle);
 			itemValues.put("itunes_summary", item.itunes_summary);
 			itemValues.put("itunes_duration", item.itunes_duration);
@@ -131,7 +207,17 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		}
 		return null;
 	}
-
+	
+	private Date getDateFromDb(String str) {
+		Date date;
+		try {
+			date = dateFormat.parse(str);
+		} catch(ParseException ex) {
+			date = new Date();
+		}
+		return date;
+	}
+	
 	private ArrayList<Podcast> getPodcastsImpl(String title) {
 		ArrayList<Podcast> ret = new ArrayList<Podcast>();
 
@@ -143,17 +229,11 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		Cursor cur = getReadableDatabase().query(STREAMS_TABLE_NAME, null, selection, null, null, null, null, null);
 
 		while(cur.moveToNext()) {
-			Date date;
-			try {
-				date = dateFormat.parse(cur.getString(2));
-			} catch(ParseException ex) {
-				date = new Date();
-			}
-			
+
 			Podcast pc = new Podcast();
 			pc.id              = cur.getLong(0);
 			pc.feedUrl         = cur.getString(1);
-			pc.lastUpdated     = date;
+			pc.lastUpdated     = getDateFromDb(cur.getString(2));
 			pc.title           = cur.getString(3);
 			pc.description     = cur.getString(4);
 			pc.link            = cur.getString(5);
@@ -167,7 +247,8 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 			pc.itunes_summary  = cur.getString(13);
 			pc.itunes_image    = cur.getString(14);
 
-			Cursor cur2 = getReadableDatabase().query(PODCAST_ITEMS_TABLE_NAME, null, "podcastID=" + pc.id, null, null, null, null, null);
+			Cursor cur2 = getReadableDatabase().query(PODCAST_ITEMS_TABLE_NAME, null, "podcastID=" + pc.id, 
+													null, null, null, "pubDate DESC", null);
 			while(cur2.moveToNext()) {
 				Podcast.PodcastItem pcItem = pc.new PodcastItem();
 				pcItem.title            = cur2.getString(1);
@@ -175,7 +256,7 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 				pcItem.guid             = cur2.getString(3);
 				pcItem.description      = cur2.getString(4);
 				pcItem.category         = cur2.getString(5);
-				pcItem.pubDate          = cur2.getString(6);
+				pcItem.pubDate          = getDateFromDb(cur2.getString(6));
 				pcItem.itunes_subtitle  = cur2.getString(7);
 				pcItem.itunes_summary   = cur2.getString(8);
 				pcItem.itunes_duration  = cur2.getString(9);
