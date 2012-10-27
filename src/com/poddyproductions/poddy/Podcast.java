@@ -102,7 +102,6 @@ public class Podcast {
 	public String language;
 	public String copyright;
 	public String lastBuildDate;
-	public String pubDate;
 	public String docs;
 	public String webMaster;
 	public String itunes_subtitle;
@@ -144,7 +143,6 @@ public class Podcast {
 			language        = getValue(rootElement, "language");
 			copyright       = getValue(rootElement, "copyright");
 			lastBuildDate   = getValue(rootElement, "lastBuildDate");
-			pubDate         = getValue(rootElement, "pubDate");
 			docs            = getValue(rootElement, "docs");
 			webMaster       = getValue(rootElement, "webMaster");
 			itunes_subtitle = getValue(rootElement, "itunes:subtitle");

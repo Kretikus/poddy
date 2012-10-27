@@ -15,13 +15,7 @@ public class DatabaseTest extends AndroidTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		dbOpenHelper = new PoddyStreamsOpenHelper(this.getContext(), "poddyTestDb");
-		podcast = new Podcast("http://feed.example.com/", ExampleXML.exampleXML);
-	}
-	
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		dbOpenHelper.dropTables();
+		podcast = new Podcast("http://feed.example.com/", ExampleXML.exampleXML + ExampleXML.allItems);
 	}
 
 	public void testPodcastFromXML() {
@@ -31,7 +25,6 @@ public class DatabaseTest extends AndroidTestCase {
 		assertTrue(podcast.language.compareTo("de") == 0 );
 		assertTrue(podcast.copyright.compareTo("http://creativecommons.org/licenses/by-nc-nd/3.0/de/") == 0 );
 		assertTrue(podcast.lastBuildDate.compareTo("Fri, 05 Oct 2012 10:45:13 +0000") == 0 );
-		assertTrue(podcast.pubDate.compareTo("Fri, 05 Oct 2012 08:00:56 +0000") == 0 );
 		assertTrue(podcast.docs.compareTo("") == 0 );
 		assertTrue(podcast.webMaster.compareTo("") == 0 );
 		assertTrue(podcast.itunes_subtitle.compareTo("Der Podcast �ber Raumfahrt von ESA und DLR � mit Tim Pritlove") == 0 );
@@ -56,7 +49,10 @@ public class DatabaseTest extends AndroidTestCase {
 	}
 	
 	public void testPodcastToAndFromDatabase() {
-		dbOpenHelper.add(podcast);
+
+		Podcast smallPodcast = new Podcast("http://feed.example.com/", ExampleXML.exampleXML + ExampleXML.oneItem);
+		dbOpenHelper.add(smallPodcast);
+		dbOpenHelper.updatePodcast(podcast);
 
 		Podcast podcast2 = dbOpenHelper.getAllPodcastWithTitle(podcast.title);
 
@@ -66,7 +62,6 @@ public class DatabaseTest extends AndroidTestCase {
 		assertTrue(podcast2.language.compareTo("de") == 0 );
 		assertTrue(podcast2.copyright.compareTo("http://creativecommons.org/licenses/by-nc-nd/3.0/de/") == 0 );
 		assertTrue(podcast2.lastBuildDate.compareTo("Fri, 05 Oct 2012 10:45:13 +0000") == 0 );
-		assertTrue(podcast2.pubDate.compareTo("Fri, 05 Oct 2012 08:00:56 +0000") == 0 );
 		assertTrue(podcast2.docs.compareTo("") == 0 );
 		assertTrue(podcast2.webMaster.compareTo("") == 0 );
 		assertTrue(podcast2.itunes_subtitle.compareTo("Der Podcast �ber Raumfahrt von ESA und DLR � mit Tim Pritlove") == 0 );

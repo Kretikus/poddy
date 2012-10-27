@@ -197,7 +197,6 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		values.put("language", entry.language);
 		values.put("copyright", entry.copyright);
 		values.put("lastBuildDate", entry.lastBuildDate);
-		values.put("pubDate", entry.pubDate);
 		values.put("docs", entry.docs);
 		values.put("webMaster", entry.webMaster);
 		values.put("itunes_subtitle", entry.itunes_subtitle);
@@ -269,7 +268,6 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 			pc.language        = cur.getString(6);
 			pc.copyright       = cur.getString(7);
 			pc.lastBuildDate   = cur.getString(8);
-			pc.pubDate         = cur.getString(9);
 			pc.docs            = cur.getString(10);
 			pc.webMaster       = cur.getString(11);
 			pc.itunes_subtitle = cur.getString(12);
