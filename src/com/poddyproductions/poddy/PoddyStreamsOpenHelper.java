@@ -21,11 +21,24 @@ import android.util.Log;
 
 public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 
+	private static final String TAG = "SQLiteOpenHelper";
+	
 	private static final int DATABASE_VERSION            = 1;
 	private static final String STREAMS_TABLE_NAME       = "poddy_streams";
 	private static final String PODCAST_ITEMS_TABLE_NAME = "poddy_podcast_items";
 
 	private static final SimpleDateFormat dateFormat     = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	private Date getDateFromDb(String str) {
+		Date date;
+		try {
+			date = dateFormat.parse(str);
+		} catch(ParseException ex) {
+			date = new Date();
+		}
+		return date;
+	}
+
 
 	private static final String STREAMS_TABLE_CREATE =
 			"CREATE TABLE " + STREAMS_TABLE_NAME + " (" +
@@ -47,7 +60,7 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 				"itunes_image    BLOB );";
 	
 	private static final String STREAMS_INDEX_CREATE =
-			"CREATE INDEX " + STREAMS_TABLE_NAME + " ON title;";
+			"CREATE INDEX STREMS_INDEX ON " + STREAMS_TABLE_NAME + " (title);";
 	
 	private static final String PODCAST_ITEMS_TABLE_CREATE =
 			"CREATE TABLE " + PODCAST_ITEMS_TABLE_NAME + " (" +
@@ -68,7 +81,7 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 					"PRIMARY KEY (podcastId, title));";
 	
 	private static final String PODCAST_ITEMS_INDEX_CREATE = 
-			"CREATE INDEX " + PODCAST_ITEMS_TABLE_NAME + " ON pubDate;";
+			"CREATE INDEX ITEM_INDEX ON " + PODCAST_ITEMS_TABLE_NAME + " (pubDate);";
 
 	public static String compress(String str) {
 
@@ -132,10 +145,10 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(STREAMS_TABLE_CREATE);
-//		db.execSQL(STREAMS_INDEX_CREATE);
+		db.execSQL(STREAMS_INDEX_CREATE);
 
 		db.execSQL(PODCAST_ITEMS_TABLE_CREATE);
-//		db.execSQL(PODCAST_ITEMS_INDEX_CREATE);
+		db.execSQL(PODCAST_ITEMS_INDEX_CREATE);
 	}
 
 	@Override
@@ -147,7 +160,32 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		getWritableDatabase().delete(PODCAST_ITEMS_TABLE_NAME, null, null);
 		getWritableDatabase().delete(STREAMS_TABLE_NAME, null, null);
 	}
-	
+
+	private void addItem(long podcastId, Podcast.PodcastItem item) {
+		ContentValues itemValues = new ContentValues();
+		
+		//String s = compress(item.itunes_summary);
+		//Log.e("TEST", "Compressed length: " + s.length() + "Uncompressed length: "+ item.itunes_summary.length());
+		
+		itemValues.put("podcastId", podcastId);
+		itemValues.put("title", item.title);
+		itemValues.put("link", item.link);
+		itemValues.put("guid", item.guid);
+		itemValues.put("description", item.description);
+		itemValues.put("category", item.category);
+		itemValues.put("pubDate", dateFormat.format(item.pubDate));
+		itemValues.put("itunes_subtitle", item.itunes_subtitle);
+		itemValues.put("itunes_summary", item.itunes_summary);
+		itemValues.put("itunes_duration", item.itunes_duration);
+		itemValues.put("mediaUrl", item.mediaUrl);
+		itemValues.put("mediaLength", item.mediaLength);
+		itemValues.put("mediaType", item.mediaType);
+
+		itemValues.put("filename", "");
+		
+		getWritableDatabase().insert(PODCAST_ITEMS_TABLE_NAME, null, itemValues);
+
+	}
 	
 	public void add(Podcast entry) {
 		ContentValues values = new ContentValues();
@@ -169,31 +207,31 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		long rowId = getWritableDatabase().insert(STREAMS_TABLE_NAME, null, values);
 
 		for(int i = 0; i < entry.podcastItems.size(); i++) {
-			ContentValues itemValues = new ContentValues();
-			Podcast.PodcastItem item = entry.podcastItems.get(i);
-			
-			//String s = compress(item.itunes_summary);
-			//Log.e("TEST", "Compressed length: " + s.length() + "Uncompressed length: "+ item.itunes_summary.length());
-			
-			itemValues.put("podcastId", rowId);
-			itemValues.put("title", item.title);
-			itemValues.put("link", item.link);
-			itemValues.put("guid", item.guid);
-			itemValues.put("description", item.description);
-			itemValues.put("category", item.category);
-			itemValues.put("pubDate", dateFormat.format(item.pubDate));
-			itemValues.put("itunes_subtitle", item.itunes_subtitle);
-			itemValues.put("itunes_summary", item.itunes_summary);
-			itemValues.put("itunes_duration", item.itunes_duration);
-			itemValues.put("mediaUrl", item.mediaUrl);
-			itemValues.put("mediaLength", item.mediaLength);
-			itemValues.put("mediaType", item.mediaType);
+			addItem(rowId, entry.podcastItems.get(i));
+		}
+	}
 
-			itemValues.put("filename", "");
-			
-			getWritableDatabase().insert(PODCAST_ITEMS_TABLE_NAME, null, itemValues);
+	public void updatePodcast(Podcast entry) {
+		String selection = "title='" + entry.title + "'";
+		Cursor cur = getReadableDatabase().query(STREAMS_TABLE_NAME, null, selection, null, null, null, null, null);
+		if (cur.getCount() == 0) {
+			add(entry);
+			return;
 		}
 		
+		cur.moveToNext();
+		long id = cur.getLong(0);
+		
+		Cursor cur2 = getReadableDatabase().query(PODCAST_ITEMS_TABLE_NAME, null, "podcastID=" + id, null, null, null, "pubDate DESC", "1");
+		if (!cur2.moveToNext()) { Log.e(TAG, "Podcast without any episodes in database"); return; }
+		Date newestEntryInDB = getDateFromDb(cur2.getString(2));
+		
+		for (int i = entry.podcastItems.size()-1; i >= 0; i--) {
+			Podcast.PodcastItem item = entry.podcastItems.get(i);
+			if (item.pubDate.compareTo(newestEntryInDB) > 0) {
+				addItem(id, item);
+			}
+		}
 	}
 
 	public ArrayList<Podcast> getAllPodcasts() {
@@ -208,16 +246,7 @@ public class PoddyStreamsOpenHelper extends SQLiteOpenHelper {
 		return null;
 	}
 	
-	private Date getDateFromDb(String str) {
-		Date date;
-		try {
-			date = dateFormat.parse(str);
-		} catch(ParseException ex) {
-			date = new Date();
-		}
-		return date;
-	}
-	
+
 	private ArrayList<Podcast> getPodcastsImpl(String title) {
 		ArrayList<Podcast> ret = new ArrayList<Podcast>();
 
